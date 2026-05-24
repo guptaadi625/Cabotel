@@ -1,109 +1,118 @@
-import {useState} from 'react';
-import tw from 'tailwind-styled-components'
-import Link from 'next/link'
-import Image from 'next/image'
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+
+const recentPlaces = [
+  { label: 'Home', sub: 'Saved address', icon: '🏠' },
+  { label: 'Office', sub: 'Saved address', icon: '🏢' },
+  { label: 'Mumbai Airport', sub: 'Chhatrapati Shivaji Maharaj International Airport', icon: '✈️' },
+  { label: 'City Mall', sub: 'LBS Marg, Mumbai', icon: '🛍️' },
+];
 
 const Search = () => {
+  const router = useRouter();
+  const [pickup, setPickup] = useState(router.query.pickup || '');
+  const [dropoff, setDropoff] = useState(router.query.dropoff || '');
 
-  const [pickupPoint, setPickupPoint]=useState("");
-  const [dropoffPoint, setDropoffPoint]=useState("");
+  const handleConfirm = () => {
+    if (!pickup || !dropoff) return;
+    router.push({ pathname: '/confirm', query: { pickup, dropoff } });
+  };
 
   return (
-       
-    <Wrapper>
-        {/* Button Container */}
-        <Link href='./' passHref>
-        <ButtonContainer>
-            <BackButton src="/asset/left.png"/>
-        </ButtonContainer>
-        </Link>
+    <div className="min-h-screen bg-cabotel-bg flex flex-col">
+      {/* Header */}
+      <div className="gradient-navy px-4 pt-safe pb-4">
+        <div className="flex items-center gap-3 mb-4 pt-4">
+          <Link href="/">
+            <button className="w-9 h-9 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white hover:bg-opacity-30 transition-all">
+              ←
+            </button>
+          </Link>
+          <h2 className="text-white font-semibold text-lg">Book a Ride</h2>
+        </div>
 
-        {/* Input Container */}
-        <InputContainer>
-          <FromtoIcons>
-              <Circle src="/asset/filled-circle.png" />
-              <Line src="/asset/vertical-line.png" />
-              <Square src="/asset/square-full.png" />
-          </FromtoIcons>
-          <InputBoxes>
-            <Input value={pickupPoint} onChange={(e)=>setPickupPoint(e.target.value)} placeholder='Enter pickup location' />
-            <Input value={dropoffPoint} onChange={(e)=>setDropoffPoint(e.target.value)} placeholder='Where to go ?' />
-            
-          </InputBoxes>
-        
-          <PlusButton src="/asset/plus-math.png" />
+        {/* Input Fields */}
+        <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
+          <div className="flex items-center px-4 py-3 border-b border-gray-100">
+            <div className="w-3 h-3 rounded-full bg-cabotel-navy mr-3 flex-shrink-0" />
+            <input
+              className="flex-1 text-cabotel-navy text-sm font-medium outline-none placeholder-gray-400"
+              value={pickup}
+              onChange={(e) => setPickup(e.target.value)}
+              placeholder="Pickup location"
+            />
+            {pickup && (
+              <button onClick={() => setPickup('')} className="text-gray-400 hover:text-gray-600 text-lg leading-none ml-2">×</button>
+            )}
+          </div>
+          <div className="flex items-center px-4 py-3">
+            <div className="w-3 h-3 rounded-sm bg-cabotel-orange mr-3 flex-shrink-0" />
+            <input
+              className="flex-1 text-cabotel-navy text-sm font-medium outline-none placeholder-gray-400"
+              value={dropoff}
+              onChange={(e) => setDropoff(e.target.value)}
+              placeholder="Where to?"
+            />
+            {dropoff && (
+              <button onClick={() => setDropoff('')} className="text-gray-400 hover:text-gray-600 text-lg leading-none ml-2">×</button>
+            )}
+          </div>
+        </div>
+      </div>
 
-        </InputContainer>
+      {/* Content */}
+      <div className="flex-1 px-4 py-4">
+        {/* Confirm Button */}
+        <button
+          onClick={handleConfirm}
+          disabled={!pickup || !dropoff}
+          className={`w-full py-4 rounded-2xl font-bold text-base transition-all mb-6 ${
+            pickup && dropoff
+              ? 'bg-cabotel-navy text-white shadow-card hover:shadow-cardHover hover:bg-cabotel-blue active:scale-95'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {pickup && dropoff ? 'See Available Rides →' : 'Enter pickup & destination'}
+        </button>
 
-        {/* Saved Container */}
-        <SavedPlaces>
-             <StarIcon src="/asset/star--v1.png"  />
-             Saved Places
-        </SavedPlaces>
-        {/* Confirm Location */}
-        <Link href={{pathname:"/confirm",
-        query: {
-          pickup:pickupPoint,
-          dropoff:dropoffPoint
-        }}} passHref >
-        <ConfirmLocation>
-           <ConfirmButton type="button">Confirm Location</ConfirmButton>
-        </ConfirmLocation>
-        </Link>
-    </Wrapper>
+        {/* Saved & Recent */}
+        <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Saved & Recent</p>
+          </div>
+          {recentPlaces.map((place, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                if (!pickup) setPickup(place.label);
+                else setDropoff(place.label);
+              }}
+              className="w-full flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+            >
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg mr-3 flex-shrink-0">
+                {place.icon}
+              </div>
+              <div className="text-left flex-1 min-w-0">
+                <p className="text-sm font-semibold text-cabotel-navy">{place.label}</p>
+                <p className="text-xs text-gray-400 truncate">{place.sub}</p>
+              </div>
+              <span className="text-gray-300 ml-2">→</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Promo */}
+        <div className="mt-4 bg-cabotel-pale border border-cabotel-light rounded-2xl px-4 py-3 flex items-center gap-3">
+          <span className="text-2xl">🎁</span>
+          <div>
+            <p className="text-sm font-bold text-cabotel-navy">First ride free!</p>
+            <p className="text-xs text-cabotel-blue">Apply code CABOTEL1ST at checkout</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
-}
+};
 
 export default Search;
-
-
-const Wrapper = tw.div`
-bg-gray-300 h-screen
-`
-
-const ButtonContainer = tw.div`
-bg-white px-4
-`
-
-const BackButton = tw.img`
-h-12 cursor-pointer hover:border-2 rounded-full
-`
-
-const FromtoIcons = tw.div`
-flex flex-col w-10 items-center ml-4
-`
-
-const InputContainer = tw.div`
-bg-white flex items-center
-`
-
-const Circle = tw.img`
-h-2.5`
-const Line = tw.img`
-h-10`
-const Square = tw.img`
-h-3`
-
-const InputBoxes = tw.div`
-flex flex-col flex-1 ml-4 `
-
-const Input = tw.input`
-h-10 bg-gray-300 my-2 flex-1 rounded-lg p-2 outline-none border-none
-`
-
-const PlusButton = tw.img`
-rounded-full h-10 w-10 bg-gray-300 mx-4
-`
-
-const SavedPlaces = tw.div`
-flex items-center bg-white px-4 py-2 mt-2 font-bold`
-
-const StarIcon = tw.img`
-bg-gray-500 rounded-full h-10 w-10 mr-2 p-2
-`
-
-const ConfirmLocation = tw.div`flex`
-
-const ConfirmButton = tw.button`flex-1
-text-white bg-gray-800 h-12 hover:bg-gray-900 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mx-2 mt-4 
-`
